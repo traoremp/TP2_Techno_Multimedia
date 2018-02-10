@@ -35,4 +35,66 @@ cbf=cv2.boxFilter(transcol[:,:,2],ddepth=-1,ksize=(1,1))
 
 crsub=crf[::SSV,::SSH]
 cbsub=cbf[::SSV,::SSH]
-imSub=[transcol[:,:,0],crsub,cbsub]
+#imSub=[transcol[:,:,0],crsub,cbsub]
+imSub= [transcol[:,:,0]]
+
+QY=np.array([[16,11,10,16,24,40,51,61],
+                         [12,12,14,19,26,48,60,55],
+                         [14,13,16,24,40,57,69,56],
+                         [14,17,22,29,51,87,80,62],
+                         [18,22,37,56,68,109,103,77],
+                         [24,35,55,64,81,104,113,92],
+                         [49,64,78,87,103,121,120,101],
+                         [72,92,95,98,112,100,103,99]])
+
+# QC=np.array([[17,18,24,47,99,99,99,99],
+#                          [18,21,26,66,99,99,99,99],
+#                          [24,26,56,99,99,99,99,99],
+#                          [47,66,99,99,99,99,99,99],
+#                          [99,99,99,99,99,99,99,99],
+#                          [99,99,99,99,99,99,99,99],
+#                          [99,99,99,99,99,99,99,99],
+#                          [99,99,99,99,99,99,99,99]])
+TransAll=[]
+TransAllQuant=[]
+ch=['Y','Cr','Cb']
+plt.figure()
+
+# QF=99.0
+# if QF < 50 and QF > 1:
+#         scale = np.floor(5000/QF)
+# elif QF < 100:
+#         scale = 200-2*QF
+# else:
+#         print "Quality Factor must be in the range [1..99]"
+# scale=scale/100.0
+# Q=[QY*scale,QC*scale,QC*scale]
+
+for idx,channel in enumerate(imSub):
+        plt.subplot(1,3,idx+1)
+        channelrows=channel.shape[0]
+        channelcols=channel.shape[1]
+        Trans = np.zeros((channelrows,channelcols), np.float32)
+        TransQuant = np.zeros((channelrows,channelcols), np.float32)
+        blocksV=channelrows/B
+        blocksH=channelcols/B
+        vis0 = np.zeros((channelrows,channelcols), np.float32)
+        vis0[:channelrows, :channelcols] = channel
+        vis0=vis0-128
+        for row in range(blocksV):
+                for col in range(blocksH):
+                        currentblock = cv2.dct(vis0[row*B:(row+1)*B,col*B:(col+1)*B])
+                        Trans[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock
+                        TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]=np.round(currentblock/QY)
+        TransAll.append(Trans)
+        TransAllQuant.append(TransQuant)
+        if idx==0:
+                selectedTrans=Trans[int(srow*B):(int(srow+1)*B),int(scol*B):int((scol+1)*B)]
+        else:
+                sr=np.floor(srow/SSV)
+                sc=np.floor(scol/SSV)
+                selectedTrans=Trans[sr*B:(sr+1)*B,sc*B:(sc+1)*B]
+        plt.imshow(selectedTrans,cmap=cm.jet,interpolation='nearest')
+        plt.colorbar(shrink=0.5)
+        plt.title('DCT of '+ch[idx])
+plt.show()
