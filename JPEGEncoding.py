@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.cm as cm
+from Rle import * 
 
 B=8 # blocksize (In Jpeg the
 
@@ -18,13 +19,13 @@ img2[:,:,1]=img1[:,:,1]
 img2[:,:,2]=img1[:,:,0]
 plt.imshow(img2)
 
-point=plt.ginput(1)
-block=np.floor(np.array(point)/B) #first component is col, second component is row
-print "Coordinates of selected block: ",block
-scol=block[0,0]
-srow=block[0,1]
-plt.plot([B*scol,B*scol+B,B*scol+B,B*scol,B*scol],[B*srow,B*srow,B*srow+B,B*srow+B,B*srow])
-plt.axis([0,w,h,0])
+# point=plt.ginput(1)
+# block=np.floor(np.array(point)/B) #first component is col, second component is row
+# print "Coordinates of selected block: ",block
+# scol=block[0,0]
+# srow=block[0,1]
+# plt.plot([B*scol,B*scol+B,B*scol+B,B*scol,B*scol],[B*srow,B*srow,B*srow+B,B*srow+B,B*srow])
+# plt.axis([0,w,h,0])
 
 transcol=cv2.cvtColor(img1, cv2.COLOR_BGR2YCR_CB)
 
@@ -57,6 +58,7 @@ QY=np.array([[16,11,10,16,24,40,51,61],
 #                          [99,99,99,99,99,99,99,99]])
 TransAll=[]
 TransAllQuant=[]
+RLE_Trans_Quant = []
 ch=['Y','Cr','Cb']
 plt.figure()
 
@@ -76,6 +78,7 @@ for idx,channel in enumerate(imSub):
         channelcols=channel.shape[1]
         Trans = np.zeros((channelrows,channelcols), np.float32)
         TransQuant = np.zeros((channelrows,channelcols), np.float32)
+        RLE_Trans_Quant =  np.zeros((channelrows,channelcols), np.float32)
         blocksV=channelrows/B
         blocksH=channelcols/B
         vis0 = np.zeros((channelrows,channelcols), np.float32)
@@ -86,15 +89,17 @@ for idx,channel in enumerate(imSub):
                         currentblock = cv2.dct(vis0[row*B:(row+1)*B,col*B:(col+1)*B])
                         Trans[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock
                         TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]=np.round(currentblock/QY)
+                        RLE_Trans_Quant[row+col] = rle_encode_matrice(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]) 
         TransAll.append(Trans)
         TransAllQuant.append(TransQuant)
-        if idx==0:
-                selectedTrans=Trans[int(srow*B):(int(srow+1)*B),int(scol*B):int((scol+1)*B)]
-        else:
-                sr=np.floor(srow/SSV)
-                sc=np.floor(scol/SSV)
-                selectedTrans=Trans[sr*B:(sr+1)*B,sc*B:(sc+1)*B]
-        plt.imshow(selectedTrans,cmap=cm.jet,interpolation='nearest')
-        plt.colorbar(shrink=0.5)
-        plt.title('DCT of '+ch[idx])
-plt.show()
+        # if idx==0:
+        #         selectedTrans=Trans[int(srow*B):(int(srow+1)*B),int(scol*B):int((scol+1)*B)]
+        # else:
+        #         sr=np.floor(srow/SSV)
+        #         sc=np.floor(scol/SSV)
+        #         selectedTrans=Trans[sr*B:(sr+1)*B,sc*B:(sc+1)*B].3
+        
+        #plt.imshow(selectedTrans,cmap=cm.jet,interpolation='nearest')
+        #plt.colorbar(shrink=0.5)
+        #plt.title('DCT of '+ch[idx])
+        #plt.show()
