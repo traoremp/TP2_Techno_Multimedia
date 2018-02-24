@@ -89,7 +89,7 @@ for idx,channel in enumerate(imSub):
                         currentblock = cv2.dct(vis0[row*B:(row+1)*B,col*B:(col+1)*B])
                         Trans[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock
                         TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]=np.round(currentblock/QY)
-                        RLE_Trans_Quant[row+col] = rle_encode_matrice(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]) 
+                        RLE_Trans_Quant[(row * B)+col)] = rle_encode_matrice(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]) 
         TransAll.append(Trans)
         TransAllQuant.append(TransQuant)
         # if idx==0:
