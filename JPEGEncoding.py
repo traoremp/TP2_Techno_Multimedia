@@ -1,3 +1,4 @@
+#https://www.hdm-stuttgart.de/~maucher/Python/MMCodecs/html/jpegUpToQuant.html
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
@@ -72,6 +73,9 @@ plt.figure()
 # scale=scale/100.0
 # Q=[QY*scale,QC*scale,QC*scale]
 
+zigZag_Matrice_all = []
+DC_Values = []
+huffman_symbole_codes = []
 for idx,channel in enumerate(imSub):
         plt.subplot(1,3,idx+1)
         channelrows=channel.shape[0]
@@ -84,12 +88,20 @@ for idx,channel in enumerate(imSub):
         vis0 = np.zeros((channelrows,channelcols), np.float32)
         vis0[:channelrows, :channelcols] = channel
         vis0=vis0-128
+
         for row in range(blocksV):
                 for col in range(blocksH):
                         currentblock = cv2.dct(vis0[row*B:(row+1)*B,col*B:(col+1)*B])
                         Trans[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock
                         TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]=np.round(currentblock/QY)
-                        # RLE_Trans_Quant[(row * B)+col)] = rle_encode_matrice(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]) 
+                        zigZag_Matrice = getZigZag(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B])
+                        DC_Values.append(zigZag_Matrice[0])
+                        zigZag_Matrice_all.append(zigZag_Matrice[1:])
+                        huffman_symbole_codes.append(dict(huffman(zigZag_Matrice[1:])))
+                        
+        DPCM(DC_Values)
+        rle(zigZag_Matrice_all, huffman_symbole_codes)
+                        
         TransAll.append(Trans)
         TransAllQuant.append(TransQuant)
 
