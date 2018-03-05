@@ -98,10 +98,9 @@ for idx,channel in enumerate(imSub):
                         DC_Values.append(zigZag_Matrice[0])
                         zigZag_Matrice_all.append(zigZag_Matrice[1:])
                         huffman_symbole_codes.append(dict(huffman(zigZag_Matrice[1:])))
-                        
         DPCM(DC_Values)
-        rle(zigZag_Matrice_all, huffman_symbole_codes)
-                        
+        encoded_image = rle(zigZag_Matrice_all, huffman_symbole_codes)
+        print encoded_image
         TransAll.append(Trans)
         TransAllQuant.append(TransQuant)
 

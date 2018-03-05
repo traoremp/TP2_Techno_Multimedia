@@ -33,7 +33,7 @@ def encode(symb2freq):
     return sorted(heappop(heap)[1:], key=lambda p: (len(p[-1]), p))
 def huffman(zigZagArray):
     symb2freq = defaultdict(int)
-    for el in zigZagArray[1:]:
+    for el in zigZagArray:
         symb2freq[el] += 1
     # in Python 3.1+:
     # symb2freq = collections.Counter(txt)
@@ -43,18 +43,36 @@ def huffman(zigZagArray):
     # for p in huff:
     #     print "%s\t%s\t%s" % (p[0], symb2freq[p[0]], p[1])
 def DPCM(DC_Values):
-    pass
+    encoding = []
+    encoding =
+    for data in DC_Values[1:]:
 
-def rle(zigZagArray, huffman_symbole_codes):
+
+def rle(zigZagArrays, huffman_symbole_codes):
     number_of_preceding_zeros = 0
-    for data in zigZagArray[1:]:
-        if data == 0:
-            number_of_preceding_zeros += 1
-            if number_of_preceding_zeros > 15:
-                pass
-        else:
-            pass
+    encodings = []
+    for x in range(0, len(zigZagArrays)):
+        zigzagArr = zigZagArrays[x]
+        AssociatedhuffmanSymCodes = huffman_symbole_codes[x]
+        #print zigzagArr, AssociatedhuffmanSymCodes
+        
+        for data in zigzagArr:
+            if data == 0:
+                number_of_preceding_zeros += 1
+                if number_of_preceding_zeros > 15:
+                    special_entry = (15,0, 0)
+                    encodings.append(special_entry)
+                    number_of_preceding_zeros = 0
 
+            else:
+                #print AssociatedhuffmanSymCodes
+                non_zero_encoding = (number_of_preceding_zeros, len(AssociatedhuffmanSymCodes[data]), data)
+                number_of_preceding_zeros = 0
+                encodings.append(non_zero_encoding)
+        EOB = (0, 0)
+        encodings.append(EOB)
+    return encodings
+        
 
 
 
