@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 import matplotlib.cm as cm
 from Rle import *
 from PIL import Image
+from scipy import interpolate
+
 
 B=8 # blocksize (In Jpeg the
 
@@ -135,19 +137,32 @@ for idx,channel in enumerate(imSub):
 # outputBlock_RGB = cv2.cvtColor(Trans_I, cv2.COLOR_YCrCb2RGB)
 
 concatenated_list = np.concatenate( TransAll_I, axis=0 )
-# outputBlock_RGB = cv2.cvtColor(Trans_I, cv2.COLOR_YCrCb2RGB)
+# outputBlock_RGB = cv2.cvtColor( ,cv2.COLOR_YCrCb2RGB)
 # outputBlock_RGB = cv2.cvtColor(concatenated_list, cv2.COLOR_YCrCb2RGB)
 # fft_p = abs(np.fft.rfft2(concatenated_list))
 # im = Image.fromarray(fft_p)
 # im = im.convert('RGB')
 # print Trans_I
+# print transcol
 # print TransAll_I
 # im.save("images/your_file.bmp")
 # img2 = cv2.imread("images/your_file.bmp", cv2.CV_LOAD_IMAGE_UNCHANGED)
 # outputBlock_RGB = cv2.cvtColor(img2, cv2.COLOR_YCrCb2RGB)
 # outputBlock_RGB = cv2.cvtColor(im, cv2.COLOR_YCrCb2RGB)
 
+print len(transcol)
+print len(concatenated_list)
 
+x = np.array(range(512))
+y = np.array(range(512))
+a = concatenated_list[:]
+xx, yy = np.meshgrid(x, y)
+f = interpolate.interp2d(x, y, a, kind='linear')
+
+znew = f(x, y)
+
+print znew
+print TransAll_I
 
         # if idx==0:
         #         selectedTrans=Trans[int(srow*B):(int(srow+1)*B),int(scol*B):int((scol+1)*B)]
