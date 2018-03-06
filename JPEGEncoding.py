@@ -9,7 +9,7 @@ B=8 # blocksize (In Jpeg the
 
 cv2.CV_LOAD_IMAGE_UNCHANGED=1
 
-img1 = cv2.imread("images/lena.bmp", cv2.CV_LOAD_IMAGE_UNCHANGED)
+img1 = cv2.imread("BackTransformedQuant.jpg", cv2.CV_LOAD_IMAGE_UNCHANGED)
 h,w=np.array(img1.shape[:2])/B * B
 img1=img1[:h,:w]
 
@@ -19,7 +19,8 @@ img2[:,:,0]=img1[:,:,2]
 img2[:,:,1]=img1[:,:,1]
 img2[:,:,2]=img1[:,:,0]
 plt.imshow(img2)
-
+plt.figure()
+#plt.show()
 # point=plt.ginput(1)
 # block=np.floor(np.array(point)/B) #first component is col, second component is row
 # print "Coordinates of selected block: ",block
@@ -39,6 +40,24 @@ crsub=crf[::SSV,::SSH]
 cbsub=cbf[::SSV,::SSH]
 imSub=[transcol[:,:,0],crsub,cbsub]
 #imSub= [transcol[:,:,0]]
+transcol[:,:,1] = cv2.resize(crsub,(h,w))
+transcol[:,:,2] = cv2.resize(cbsub,(h,w))
+plt.imshow(cv2.cvtColor(transcol, cv2.COLOR_YCR_CB2BGR)[...,::-1])
+plt.figure()
+
+# SSV=2
+# SSH=2
+# crf=cv2.boxFilter(img2[:,:,1],ddepth=-1,ksize=(1,1))
+# cbf=cv2.boxFilter(img2[:,:,2],ddepth=-1,ksize=(1,1))
+
+# crsub=crf[::SSV,::SSH]
+# cbsub=cbf[::SSV,::SSH]
+# imSub=[transcol[:,:,0],crsub,cbsub]
+# #imSub= [transcol[:,:,0]]
+# img2[:,:,1] = cv2.resize(crsub,(h,w))
+# img2[:,:,2] = cv2.resize(cbsub,(h,w))
+# plt.imshow(img2)
+# plt.show()
 
 QY=np.array([[16,11,10,16,24,40,51,61],
                          [12,12,14,19,26,48,60,55],
@@ -61,9 +80,9 @@ TransAll=[]
 TransAllQuant=[]
 RLE_Trans_Quant = []
 ch=['Y','Cr','Cb']
-plt.figure()
+#plt.figure()
 
-QF=90.0
+QF=70.0
 if QF < 50 and QF > 1:
         scale = np.floor(5000/QF)
 elif QF < 100:
@@ -72,7 +91,9 @@ else:
         print "Quality Factor must be in the range [1..99]"
 scale=scale/100.0
 Q=[QY*scale,QC*scale,QC*scale]
-
+print scale
+print Q[0]
+print Q[1]
 
 compressed = {}
 for idx,channel in enumerate(imSub):
@@ -125,3 +146,30 @@ print "Compression ratio = %f"%(1-(float(compressed_size)/float(h * w * 8 * 3)))
         #plt.colorbar(shrink=0.5)
         #plt.title('DCT of '+ch[idx])
         #plt.show()
+DecAll=np.zeros((h,w,3), np.uint8)
+for idx,channel in enumerate(TransAllQuant):
+        channelrows=channel.shape[0]
+        channelcols=channel.shape[1]
+        blocksV=channelrows/B
+        blocksH=channelcols/B
+        back0 = np.zeros((channelrows,channelcols), np.uint8)
+        for row in range(blocksV):
+                for col in range(blocksH):
+                        dequantblock=channel[row*B:(row+1)*B,col*B:(col+1)*B]*Q[idx]
+                        currentblock = np.round(cv2.idct(dequantblock))+128
+                        currentblock[currentblock>255]=255
+                        currentblock[currentblock<0]=0
+                        back0[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock
+        back1=cv2.resize(back0,(h,w))
+        DecAll[:,:,idx]=np.round(back1)
+reImg=cv2.cvtColor(DecAll, cv2.COLOR_YCrCb2BGR)
+cv2.imwrite('BackTransformedQuant.jpg', reImg)
+#plt.figure()
+img3=np.zeros(img1.shape,np.uint8)
+img3[:,:,0]=reImg[:,:,2]
+img3[:,:,1]=reImg[:,:,1]
+img3[:,:,2]=reImg[:,:,0]
+plt.imshow(img3)
+SSE=np.sqrt(np.sum((img2-img3)**2))
+print "Sum of squared error: ",SSE
+#plt.show()
