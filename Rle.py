@@ -43,19 +43,20 @@ def huffman(zigZagArray):
     # for p in huff:
     #     print "%s\t%s\t%s" % (p[0], symb2freq[p[0]], p[1])
 def DPCM(DC_Values):
+    predictor = 1.0
     encoding = []
-    encoding =
-    for data in DC_Values[1:]:
-
+    encoding.append(DC_Values[0])
+    for x in range(1, len(DC_Values)):
+        encoding.append(DC_Values[x]-(predictor*DC_Values[x-1]))
+    return encoding
 
 def rle(zigZagArrays, huffman_symbole_codes):
     number_of_preceding_zeros = 0
     encodings = []
     for x in range(0, len(zigZagArrays)):
         zigzagArr = zigZagArrays[x]
-        AssociatedhuffmanSymCodes = huffman_symbole_codes[x]
+        #AssociatedhuffmanSymCodes = huffman_symbole_codes[x]
         #print zigzagArr, AssociatedhuffmanSymCodes
-        
         for data in zigzagArr:
             if data == 0:
                 number_of_preceding_zeros += 1
@@ -63,10 +64,9 @@ def rle(zigZagArrays, huffman_symbole_codes):
                     special_entry = (15,0, 0)
                     encodings.append(special_entry)
                     number_of_preceding_zeros = 0
-
             else:
                 #print AssociatedhuffmanSymCodes
-                non_zero_encoding = (number_of_preceding_zeros, len(AssociatedhuffmanSymCodes[data]), data)
+                non_zero_encoding = (number_of_preceding_zeros, len(huffman_symbole_codes[data]), data)
                 number_of_preceding_zeros = 0
                 encodings.append(non_zero_encoding)
         EOB = (0, 0)
@@ -75,4 +75,19 @@ def rle(zigZagArrays, huffman_symbole_codes):
         
 
 
-
+def compress(encoded_DC_Values, encoded_image, huffman_symbole_codes):
+    final_compression = ''
+    final_compression += '{0:08b}'.format(int(len(encoded_DC_Values)))
+    for value in encoded_DC_Values:
+        final_compression += '{0:08b}'.format(int(value))
+    for an_input in encoded_image:
+        if len(an_input) == 2:
+            continue #EOB
+        else:
+            if an_input[2] == 0:
+                final_compression += '{0:08b}'.format(int(0))
+            else: 
+                final_compression += '{0:04b}'.format(int(an_input[0]))
+                final_compression += '{0:04b}'.format(int(an_input[1]))
+                final_compression += huffman_symbole_codes[an_input[2]]
+    return final_compression

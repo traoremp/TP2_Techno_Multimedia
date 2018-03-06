@@ -37,8 +37,8 @@ cbf=cv2.boxFilter(transcol[:,:,2],ddepth=-1,ksize=(1,1))
 
 crsub=crf[::SSV,::SSH]
 cbsub=cbf[::SSV,::SSH]
-#imSub=[transcol[:,:,0],crsub,cbsub]
-imSub= [transcol[:,:,0]]
+imSub=[transcol[:,:,0],crsub,cbsub]
+#imSub= [transcol[:,:,0]]
 
 QY=np.array([[16,11,10,16,24,40,51,61],
                          [12,12,14,19,26,48,60,55],
@@ -49,40 +49,42 @@ QY=np.array([[16,11,10,16,24,40,51,61],
                          [49,64,78,87,103,121,120,101],
                          [72,92,95,98,112,100,103,99]])
 
-# QC=np.array([[17,18,24,47,99,99,99,99],
-#                          [18,21,26,66,99,99,99,99],
-#                          [24,26,56,99,99,99,99,99],
-#                          [47,66,99,99,99,99,99,99],
-#                          [99,99,99,99,99,99,99,99],
-#                          [99,99,99,99,99,99,99,99],
-#                          [99,99,99,99,99,99,99,99],
-#                          [99,99,99,99,99,99,99,99]])
+QC=np.array([[17,18,24,47,99,99,99,99],
+                         [18,21,26,66,99,99,99,99],
+                         [24,26,56,99,99,99,99,99],
+                         [47,66,99,99,99,99,99,99],
+                         [99,99,99,99,99,99,99,99],
+                         [99,99,99,99,99,99,99,99],
+                         [99,99,99,99,99,99,99,99],
+                         [99,99,99,99,99,99,99,99]])
 TransAll=[]
 TransAllQuant=[]
 RLE_Trans_Quant = []
 ch=['Y','Cr','Cb']
 plt.figure()
 
-# QF=99.0
-# if QF < 50 and QF > 1:
-#         scale = np.floor(5000/QF)
-# elif QF < 100:
-#         scale = 200-2*QF
-# else:
-#         print "Quality Factor must be in the range [1..99]"
-# scale=scale/100.0
-# Q=[QY*scale,QC*scale,QC*scale]
+QF=50.0
+if QF < 50 and QF > 1:
+        scale = np.floor(5000/QF)
+elif QF < 100:
+        scale = 200-2*QF
+else:
+        print "Quality Factor must be in the range [1..99]"
+scale=scale/100.0
+Q=[QY*scale,QC*scale,QC*scale]
 
 zigZag_Matrice_all = []
 DC_Values = []
 huffman_symbole_codes = []
+vector_matrices = []
+encoded_DC_Values = '' 
+compressed = {}
 for idx,channel in enumerate(imSub):
-        plt.subplot(1,3,idx+1)
+#plt.subplot(1,3,idx+1)
         channelrows=channel.shape[0]
         channelcols=channel.shape[1]
         Trans = np.zeros((channelrows,channelcols), np.float32)
         TransQuant = np.zeros((channelrows,channelcols), np.float32)
-        RLE_Trans_Quant =  np.zeros((channelrows,channelcols), np.float32)
         blocksV=channelrows/B
         blocksH=channelcols/B
         vis0 = np.zeros((channelrows,channelcols), np.float32)
@@ -93,17 +95,21 @@ for idx,channel in enumerate(imSub):
                 for col in range(blocksH):
                         currentblock = cv2.dct(vis0[row*B:(row+1)*B,col*B:(col+1)*B])
                         Trans[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock
-                        TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]=np.round(currentblock/QY)
+                        TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]=np.round(currentblock/Q[idx])
                         zigZag_Matrice = getZigZag(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B])
                         DC_Values.append(zigZag_Matrice[0])
+                        vector_matrices = vector_matrices + zigZag_Matrice[1:]
                         zigZag_Matrice_all.append(zigZag_Matrice[1:])
-                        huffman_symbole_codes.append(dict(huffman(zigZag_Matrice[1:])))
-        DPCM(DC_Values)
+        huffman_symbole_codes = dict(huffman(vector_matrices))
+        encoded_DC_Values = DPCM(DC_Values)
         encoded_image = rle(zigZag_Matrice_all, huffman_symbole_codes)
-        print encoded_image
         TransAll.append(Trans)
         TransAllQuant.append(TransQuant)
-
+        compressed[idx] = compress(encoded_DC_Values, encoded_image, huffman_symbole_codes)
+compressed_size = 0
+for idx, compressed_channel in compressed.items():
+        compressed_size += len(compressed_channel)
+print (compressed_size/8) * 2**(-20)
         # if idx==0:
         #         selectedTrans=Trans[int(srow*B):(int(srow+1)*B),int(scol*B):int((scol+1)*B)]
         # else:
