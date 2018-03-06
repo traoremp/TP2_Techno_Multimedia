@@ -82,7 +82,7 @@ def compress(encoded_DC_Values, encoded_image, huffman_symbole_codes):
         final_compression += '{0:08b}'.format(int(value))
     for an_input in encoded_image:
         if len(an_input) == 2:
-            continue #EOB
+            final_compression += '{0:08b}'.format(int(0)) #EOB
         else:
             if an_input[2] == 0:
                 final_compression += '{0:08b}'.format(int(0))

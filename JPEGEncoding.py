@@ -63,7 +63,7 @@ RLE_Trans_Quant = []
 ch=['Y','Cr','Cb']
 plt.figure()
 
-QF=50.0
+QF=90.0
 if QF < 50 and QF > 1:
         scale = np.floor(5000/QF)
 elif QF < 100:
@@ -73,14 +73,16 @@ else:
 scale=scale/100.0
 Q=[QY*scale,QC*scale,QC*scale]
 
-zigZag_Matrice_all = []
-DC_Values = []
-huffman_symbole_codes = []
-vector_matrices = []
-encoded_DC_Values = '' 
+
 compressed = {}
 for idx,channel in enumerate(imSub):
 #plt.subplot(1,3,idx+1)
+        zigZag_Matrice_all = []
+        DC_Values = []
+        huffman_symbole_codes = []
+        vector_matrices = []
+        encoded_DC_Values = '' 
+
         channelrows=channel.shape[0]
         channelcols=channel.shape[1]
         Trans = np.zeros((channelrows,channelcols), np.float32)
@@ -109,8 +111,10 @@ for idx,channel in enumerate(imSub):
 compressed_size = 0
 for idx, compressed_channel in compressed.items():
         compressed_size += len(compressed_channel)
-print (compressed_size/8) * 2**(-20)
-        # if idx==0:
+print h * w * 8 * 3
+print compressed_size
+print "Compression ratio = %f"%(1-(float(compressed_size)/float(h * w * 8 * 3)))
+        # if idx==0:    
         #         selectedTrans=Trans[int(srow*B):(int(srow+1)*B),int(scol*B):int((scol+1)*B)]
         # else:
         #         sr=np.floor(srow/SSV)
