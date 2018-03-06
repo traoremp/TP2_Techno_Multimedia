@@ -9,7 +9,7 @@ B=8 # blocksize (In Jpeg the
 
 cv2.CV_LOAD_IMAGE_UNCHANGED=1
 
-img1 = cv2.imread("BackTransformedQuant.jpg", cv2.CV_LOAD_IMAGE_UNCHANGED)
+img1 = cv2.imread("images/lena.bmp", cv2.CV_LOAD_IMAGE_UNCHANGED)
 h,w=np.array(img1.shape[:2])/B * B
 img1=img1[:h,:w]
 
@@ -82,7 +82,7 @@ RLE_Trans_Quant = []
 ch=['Y','Cr','Cb']
 #plt.figure()
 
-QF=70.0
+QF=50.0
 if QF < 50 and QF > 1:
         scale = np.floor(5000/QF)
 elif QF < 100:
