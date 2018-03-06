@@ -42,11 +42,12 @@ def huffman(zigZagArray):
     # print "Symbol\tWeight\tHuffman Code"
     # for p in huff:
     #     print "%s\t%s\t%s" % (p[0], symb2freq[p[0]], p[1])
+''' 
 def DPCM(DC_Values):
     encoding = []
     encoding =
     for data in DC_Values[1:]:
-
+        '''
 
 def rle(zigZagArrays, huffman_symbole_codes):
     number_of_preceding_zeros = 0

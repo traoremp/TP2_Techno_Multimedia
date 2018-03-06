@@ -3,7 +3,8 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.cm as cm
-from Rle import * 
+from Rle import *
+from PIL import Image
 
 B=8 # blocksize (In Jpeg the
 
@@ -29,6 +30,7 @@ plt.imshow(img2)
 # plt.axis([0,w,h,0])
 
 transcol=cv2.cvtColor(img1, cv2.COLOR_BGR2YCR_CB)
+# cv2.COLOR_YCrCb2RGB
 
 SSV=2
 SSH=2
@@ -58,7 +60,9 @@ QY=np.array([[16,11,10,16,24,40,51,61],
 #                          [99,99,99,99,99,99,99,99],
 #                          [99,99,99,99,99,99,99,99]])
 TransAll=[]
+TransAll_I=[]
 TransAllQuant=[]
+TransAllDequant=[]
 RLE_Trans_Quant = []
 ch=['Y','Cr','Cb']
 plt.figure()
@@ -81,12 +85,16 @@ for idx,channel in enumerate(imSub):
         channelrows=channel.shape[0]
         channelcols=channel.shape[1]
         Trans = np.zeros((channelrows,channelcols), np.float32)
+        Trans_I = np.zeros((channelrows,channelcols), np.float32)
         TransQuant = np.zeros((channelrows,channelcols), np.float32)
+        TransDequant = np.zeros((channelrows,channelcols), np.float32)
         RLE_Trans_Quant =  np.zeros((channelrows,channelcols), np.float32)
         blocksV=channelrows/B
         blocksH=channelcols/B
         vis0 = np.zeros((channelrows,channelcols), np.float32)
         vis0[:channelrows, :channelcols] = channel
+        vis1 = np.zeros((channelrows,channelcols), np.float32)
+        vis1[:channelrows, :channelcols] = channel
         vis0=vis0-128
 
         for row in range(blocksV):
@@ -94,15 +102,45 @@ for idx,channel in enumerate(imSub):
                         currentblock = cv2.dct(vis0[row*B:(row+1)*B,col*B:(col+1)*B])
                         Trans[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock
                         TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]=np.round(currentblock/QY)
+
+
+                        TransDequant[row*B:(row+1)*B,col*B:(col+1)*B]=\
+                            np.round(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]*QY)
+
+                        # print currentblock
+                        # print TransDequant[row*B:(row+1)*B,col*B:(col+1)*B]
+
+                        currentblock2=cv2.idct(TransDequant[row*B:(row+1)*B,col*B:(col+1)*B])
+                        # print TransDequant
+                        # print TransQuant
+                        # print currentblock2
+                        # print vis0[row*B:(row+1)*B,col*B:(col+1)*B]
+                        Trans_I[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock2
+
                         zigZag_Matrice = getZigZag(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B])
                         DC_Values.append(zigZag_Matrice[0])
                         zigZag_Matrice_all.append(zigZag_Matrice[1:])
                         huffman_symbole_codes.append(dict(huffman(zigZag_Matrice[1:])))
-        DPCM(DC_Values)
+        # DPCM(DC_Values)
         encoded_image = rle(zigZag_Matrice_all, huffman_symbole_codes)
-        print encoded_image
+        # print encoded_image
         TransAll.append(Trans)
+        TransAll_I.append(Trans_I)
+        Trans_I = Trans_I+128
         TransAllQuant.append(TransQuant)
+        TransAllDequant.append(TransDequant)
+
+
+# print Trans_I
+# outputBlock_RGB = cv2.cvtColor(Trans_I, cv2.COLOR_YCrCb2RGB)
+# im = Image.fromarray(Trans_I, 'YCbCr')
+# outputBlock_RGB = cv2.cvtColor(Trans_I, cv2.COLOR_YCrCb2RGB)
+# cv2.imshow('Demo Image',Trans_I)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
+print Trans_I
+# im.save("images/your_file.bmp")
+# outputBlock_RGB = cv2.cvtColor(im, cv2.COLOR_YCrCb2RGB)
 
         # if idx==0:
         #         selectedTrans=Trans[int(srow*B):(int(srow+1)*B),int(scol*B):int((scol+1)*B)]
