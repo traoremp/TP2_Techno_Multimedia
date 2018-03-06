@@ -69,6 +69,7 @@ def rle(zigZagArrays, huffman_symbole_codes):
                 non_zero_encoding = (number_of_preceding_zeros, len(huffman_symbole_codes[data]), data)
                 number_of_preceding_zeros = 0
                 encodings.append(non_zero_encoding)
+        number_of_preceding_zeros = 0
         EOB = (0, 0)
         encodings.append(EOB)
     return encodings
@@ -77,9 +78,9 @@ def rle(zigZagArrays, huffman_symbole_codes):
 
 def compress(encoded_DC_Values, encoded_image, huffman_symbole_codes):
     final_compression = ''
-    final_compression += '{0:08b}'.format(int(len(encoded_DC_Values)))
-    for value in encoded_DC_Values:
-        final_compression += '{0:08b}'.format(int(value))
+    #final_compression += '{0:08b}'.format(int(len(encoded_DC_Values)))
+    #for value in encoded_DC_Values:
+    #    final_compression += '{0:08b}'.format(int(value))
     for an_input in encoded_image:
         if len(an_input) == 2:
             final_compression += '{0:08b}'.format(int(0)) #EOB

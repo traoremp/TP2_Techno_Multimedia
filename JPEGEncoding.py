@@ -99,11 +99,11 @@ for idx,channel in enumerate(imSub):
                         Trans[row*B:(row+1)*B,col*B:(col+1)*B]=currentblock
                         TransQuant[row*B:(row+1)*B,col*B:(col+1)*B]=np.round(currentblock/Q[idx])
                         zigZag_Matrice = getZigZag(TransQuant[row*B:(row+1)*B,col*B:(col+1)*B])
-                        DC_Values.append(zigZag_Matrice[0])
-                        vector_matrices = vector_matrices + zigZag_Matrice[1:]
-                        zigZag_Matrice_all.append(zigZag_Matrice[1:])
+                        #DC_Values.append(zigZag_Matrice[0])
+                        vector_matrices = vector_matrices + zigZag_Matrice#[1:]
+                        zigZag_Matrice_all.append(zigZag_Matrice)#[1:]
         huffman_symbole_codes = dict(huffman(vector_matrices))
-        encoded_DC_Values = DPCM(DC_Values)
+        #encoded_DC_Values = DPCM(DC_Values)
         encoded_image = rle(zigZag_Matrice_all, huffman_symbole_codes)
         TransAll.append(Trans)
         TransAllQuant.append(TransQuant)
