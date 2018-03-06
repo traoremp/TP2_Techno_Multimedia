@@ -125,22 +125,29 @@ for idx,channel in enumerate(imSub):
         encoded_image = rle(zigZag_Matrice_all, huffman_symbole_codes)
         # print encoded_image
         TransAll.append(Trans)
-        TransAll_I.append(Trans_I)
         Trans_I = Trans_I+128
+        TransAll_I.append(Trans_I)
         TransAllQuant.append(TransQuant)
         TransAllDequant.append(TransDequant)
 
 
 # print Trans_I
 # outputBlock_RGB = cv2.cvtColor(Trans_I, cv2.COLOR_YCrCb2RGB)
-# im = Image.fromarray(Trans_I, 'YCbCr')
+
+concatenated_list = np.concatenate( TransAll_I, axis=0 )
 # outputBlock_RGB = cv2.cvtColor(Trans_I, cv2.COLOR_YCrCb2RGB)
-# cv2.imshow('Demo Image',Trans_I)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-print Trans_I
+# outputBlock_RGB = cv2.cvtColor(concatenated_list, cv2.COLOR_YCrCb2RGB)
+# fft_p = abs(np.fft.rfft2(concatenated_list))
+# im = Image.fromarray(fft_p)
+# im = im.convert('RGB')
+# print Trans_I
+# print TransAll_I
 # im.save("images/your_file.bmp")
+# img2 = cv2.imread("images/your_file.bmp", cv2.CV_LOAD_IMAGE_UNCHANGED)
+# outputBlock_RGB = cv2.cvtColor(img2, cv2.COLOR_YCrCb2RGB)
 # outputBlock_RGB = cv2.cvtColor(im, cv2.COLOR_YCrCb2RGB)
+
+
 
         # if idx==0:
         #         selectedTrans=Trans[int(srow*B):(int(srow+1)*B),int(scol*B):int((scol+1)*B)]
